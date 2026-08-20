@@ -319,7 +319,13 @@ Decisiones deliberadas; conviene no deshacerlas sin medir:
 ## Móvil
 
 - Diseñado para horizontal; en vertical aparece un aviso para rotar el
-  dispositivo.
+  dispositivo. Ese aviso usa **`height: 100dvh`**, no `100vh`: en el móvil
+  `100vh` (igual que `inset: 0`) mide el viewport *grande*, el de la barra del
+  navegador retraída, así que la caja es más alta de lo que se ve y el mensaje
+  centrado se iba por debajo de la barra. `100dvh` sigue el área visible y se
+  reajusta cuando la barra aparece o desaparece; la línea `100vh` que va justo
+  antes es solo la reserva para navegadores que no conocen `dvh`. El tamaño del
+  texto va en `clamp()` sobre `vmin` para que quepa en cualquier pantalla.
 - Los overlays (menú y vídeo) **hacen scroll** cuando no caben. Un elemento
   centrado con flexbox que desborda no se puede desplazar hasta arriba, así que
   van alineados al inicio y centrados con `margin: auto`, que funciona en los dos

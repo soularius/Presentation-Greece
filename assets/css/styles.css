@@ -683,36 +683,63 @@ body {
   .back-btn { padding: 0.5rem 1rem; }
 }
 
-/* ── Rotate overlay ─────────────────────────────────────────── */
+/* ── Rotate overlay ─────────────────────────────────────────────
+   `inset: 0` and `100vh` both resolve against the *large* viewport on
+   phones — the one measured with the browser bars retracted. With the
+   bars on screen that box is taller than what you can see, so centred
+   content lands below the real centre and slides under the chrome.
+   `100dvh` tracks the visible area and reflows when the bars come and
+   go; the `100vh` line above it is only the fallback for browsers that
+   do not know `dvh`. Sizes are fluid so the message fits any phone.
+   ─────────────────────────────────────────────────────────────── */
 .rotate-overlay {
   display: none;
   position: fixed;
-  inset: 0;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  height: 100dvh;
   z-index: 9999;
+  box-sizing: border-box;
+  padding: 4vmin 7vw;
   background: var(--aegean-dk);
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 1.1rem;
+  text-align: center;
+  gap: clamp(0.5rem, 3vmin, 1.1rem);
+  overflow: hidden;
+  overscroll-behavior: none;
 }
 
 .rotate-overlay__phone {
-  font-size: 3.4rem;
+  font-size: clamp(2.2rem, 15vmin, 3.4rem);
+  line-height: 1;
   animation: tilt-phone 1.4s ease-in-out infinite;
 }
 
+/* A column flex with `align-items: center` sizes its children to their
+   content, so without an explicit cap the heading overflows the phone
+   instead of wrapping. */
 .rotate-overlay__text {
   margin: 0;
+  max-width: 100%;
   color: var(--gold-soft);
   font-family: var(--font-display);
-  font-size: 1.2rem;
+  font-size: clamp(1rem, 5.6vmin, 1.5rem);
   font-weight: 700;
+  line-height: 1.22;
+  text-wrap: balance;
 }
 
 .rotate-overlay__sub {
   margin: 0;
+  max-width: min(28ch, 100%);
   color: rgba(247, 242, 231, 0.5);
-  font-size: 0.82rem;
+  font-size: clamp(0.72rem, 3.6vmin, 0.95rem);
+  line-height: 1.45;
+  text-wrap: balance;
 }
 
 @keyframes tilt-phone {
