@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&family=Quicksand:wght@500;600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="assets/css/styles.css" />
 </head>
 <body>
   <main class="scene-wrap">
@@ -48,7 +48,7 @@
         <video id="videoThumb" class="video-bubble__video"
                muted loop playsinline autoplay preload="auto"
                disablepictureinpicture controlslist="nodownload noplaybackrate"></video>
-        <span class="video-bubble__badge" aria-hidden="true">&#9654;</span>
+        <span class="video-bubble__play" aria-hidden="true">&#9654;</span>
       </button>
     </div>
 
@@ -66,6 +66,8 @@
   <button id="backBtn" class="btn btn--blue back-btn hidden" type="button">&#8592; Back</button>
   <button id="menuBtn" class="btn btn--blue menu-btn" type="button" aria-label="Go to a scene">&#128205;</button>
   <button id="musicBtn" class="btn btn--blue music-btn" type="button" aria-label="Muted audio" title="Muted audio">&#128263;</button>
+  <button id="fullscreenBtn" class="btn btn--blue fullscreen-btn hidden" type="button"
+          aria-label="Enter full screen" title="Full screen">&#9974;</button>
   <button id="creditsBtn" class="credits-btn" type="button">Sources &amp; Credits</button>
 
   <div id="sceneMenu" class="overlay hidden" role="dialog" aria-modal="true" aria-label="Scene selector">
@@ -126,6 +128,6 @@
     <p class="rotate-overlay__sub">This experience requires landscape orientation</p>
   </div>
 
-  <script src="script.js"></script>
+  <script src="assets/js/script.js"></script>
 </body>
 </html>

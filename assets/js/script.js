@@ -38,6 +38,8 @@ const videoLarge     = document.getElementById('videoLarge');
 const videoCaption   = document.getElementById('videoCaption');
 const closeVideoBtn  = document.getElementById('closeVideoBtn');
 
+const fullscreenBtn = document.getElementById('fullscreenBtn');
+
 const sceneMenu       = document.getElementById('sceneMenu');
 const closeMenuBtn    = document.getElementById('closeMenuBtn');
 const creditsBtn      = document.getElementById('creditsBtn');
@@ -266,6 +268,38 @@ function toggleMusic() {
   updateMusicButton();
 }
 
+// ── Full screen ───────────────────────────────────────────────
+// Chrome, Firefox, Edge and Android use the standard API; older Safari
+// needs the webkit prefix. iPhones expose neither for ordinary
+// elements, so there the button hides itself rather than pretending.
+const fullscreenSupported = !!(
+  document.fullscreenEnabled ||
+  document.webkitFullscreenEnabled ||
+  document.documentElement.webkitRequestFullscreen
+);
+
+function fullscreenElement() {
+  return document.fullscreenElement || document.webkitFullscreenElement || null;
+}
+
+function updateFullscreenButton() {
+  const on = !!fullscreenElement();
+  fullscreenBtn.textContent = on ? '✖' : '⛶';
+  fullscreenBtn.setAttribute('aria-label', on ? 'Exit full screen' : 'Enter full screen');
+  fullscreenBtn.title = on ? 'Exit full screen' : 'Full screen';
+}
+
+function toggleFullscreen() {
+  const root = document.documentElement;
+  if (fullscreenElement()) {
+    const exit = document.exitFullscreen || document.webkitExitFullscreen;
+    if (exit) Promise.resolve(exit.call(document)).catch(() => {});
+    return;
+  }
+  const request = root.requestFullscreen || root.webkitRequestFullscreen;
+  if (request) Promise.resolve(request.call(root)).catch(() => {});
+}
+
 // ── State ─────────────────────────────────────────────────────
 const ANIM = {
   FADE_SPEED: 0.08,
@@ -447,7 +481,11 @@ function placeActor(el, spot) {
 function resetActorClasses(el) {
   el.classList.remove('is-posing', 'is-walking', 'is-arrived', 'is-grounded',
                       'from-right', 'is-riding');
-  el.style.opacity = '';
+  el.style.opacity   = '';
+  el.style.transform = '';   // hand centring back to the stylesheet
+  el.style.left      = '';
+  el.style.bottom    = '';
+  el.style.height    = '';
 }
 
 // Piecewise interpolation along the waypoints of a ride path.
@@ -472,9 +510,32 @@ function samplePath(path, t) {
 // what an object coming at the camera does. A one-shot ride (loop:
 // false) eases to a halt at the last waypoint and stays parked there
 // until the scene changes.
+//
+// Everything moves through `transform`, never through left/bottom/
+// height: those would make the browser lay the page out again on every
+// single frame, with the character artwork and its drop-shadow behind
+// it. The element is pinned at the bottom-left corner and sized once to
+// the tallest waypoint; `rideBase` holds what the maths needs.
+const rideBase = { width: 0, height: 0 };
+
+function measureRide(cfg) {
+  const tallest = cfg.ride.path.reduce((max, p) => Math.max(max, p.h), 0);
+  rideBase.height = tallest;
+  actor1.style.height = `${tallest}vh`;
+
+  // Derived from the artwork's own proportions rather than read back
+  // from layout, so there is no forced reflow at all.
+  const fromArt = () => {
+    if (!p1El.naturalHeight) return;
+    rideBase.width = state.h * (tallest / 100) * (p1El.naturalWidth / p1El.naturalHeight);
+  };
+  fromArt();
+  if (!rideBase.width) p1El.addEventListener('load', fromArt, { once: true });
+}
+
 function updateRide(cfg) {
   const ride = cfg.ride;
-  if (!ride) return;
+  if (!ride || !rideBase.width) return;
 
   const looping = ride.loop !== false;
   const elapsed = performance.now() - rideStart;
@@ -490,9 +551,13 @@ function updateRide(cfg) {
 
   const spot = samplePath(ride.path, eased);
 
-  actor1.style.left   = `${(spot.x * 100).toFixed(2)}%`;
-  actor1.style.bottom = `${(spot.y * 100).toFixed(2)}%`;
-  actor1.style.height = `${spot.h.toFixed(2)}vh`;
+  // transform-origin sits at the bottom centre, so scaling keeps the
+  // wheels put and the translation places them where the path says.
+  const scale = spot.h / rideBase.height;
+  const tx    = spot.x * state.w - (rideBase.width * 0.5);
+  const ty    = -spot.y * state.h;
+
+  actor1.style.transform = `translate(${tx.toFixed(1)}px, ${ty.toFixed(1)}px) scale(${scale.toFixed(4)})`;
 
   // Fade in on arrival; a looping ride also fades out at the seam.
   let fade = t < 0.05 ? t / 0.05 : 1;
@@ -535,6 +600,7 @@ function stageActors(cfg) {
     actor1.classList.add('is-riding', 'is-grounded');
     actor1.classList.remove('hidden');
     rideStart = performance.now();
+    measureRide(cfg);
     updateRide(cfg);
     return;
   }
@@ -745,12 +811,19 @@ function render() {
 }
 
 // ── Events ────────────────────────────────────────────────────
-window.addEventListener('resize', resizeCanvas);
+window.addEventListener('resize', () => {
+  resizeCanvas();
+  const cfg = SCENES[state.scene];
+  if (cfg && cfg.cast === 'ride') measureRide(cfg);
+});
 
 startBtn.addEventListener('click', () => goToScene(1));
 nextBtn.addEventListener('click', advance);
 backBtn.addEventListener('click', () => goToScene(Math.max(0, state.scene - 1)));
 musicBtn.addEventListener('click', toggleMusic);
+fullscreenBtn.addEventListener('click', toggleFullscreen);
+document.addEventListener('fullscreenchange', updateFullscreenButton);
+document.addEventListener('webkitfullscreenchange', updateFullscreenButton);
 
 menuBtn.addEventListener('click', () => sceneMenu.classList.remove('hidden'));
 closeMenuBtn.addEventListener('click', () => sceneMenu.classList.add('hidden'));
@@ -778,6 +851,10 @@ window.addEventListener('keydown', (e) => {
     sceneMenu.classList.add('hidden');
     creditsOverlay.classList.add('hidden');
     closeVideo();
+    return;
+  }
+  if (e.key === 'f' || e.key === 'F') {
+    toggleFullscreen();
     return;
   }
   if (e.key === 'ArrowLeft') {
@@ -819,6 +896,10 @@ function applyDeepLink() {
 function init() {
   resizeCanvas();
   updateMusicButton();
+  if (fullscreenSupported) {
+    fullscreenBtn.classList.remove('hidden');
+    updateFullscreenButton();
+  }
   applyDeepLink();
   render();
 }

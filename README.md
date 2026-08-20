@@ -28,7 +28,7 @@ Para no perder el turno, cada una tiene su color: **Jenny en dorado** y
 cambian de color según a quién le toca hablar.
 
 En el código y en los nombres de archivo se siguen llamando `p1` (Jenny) y
-`p2` (Yined); los nombres visibles están en `SPEAKERS`, en [script.js](script.js).
+`p2` (Yined); los nombres visibles están en `SPEAKERS`, en [assets/js/script.js](assets/js/script.js).
 
 ## Escenas
 
@@ -51,7 +51,7 @@ a ser *Travel Again ↻* y vuelve a la portada.
 
 ### Cómo añadir una escena nueva
 
-Todo vive en el objeto `SCENES` de [script.js](script.js). Cada entrada declara
+Todo vive en el objeto `SCENES` de [assets/js/script.js](assets/js/script.js). Cada entrada declara
 su propia carpeta de assets, así que renumerar es cambiar una cadena:
 
 ```js
@@ -99,10 +99,21 @@ Al añadir una escena, acuérdate de sumar su botón en el menú de
 ## Estructura
 
 - [index.html](index.html): estructura, diálogo, menú y overlays.
-- [styles.css](styles.css): paleta egea, actores, botones y paneles.
-- [script.js](script.js): escenas, puesta en escena, diálogo y eventos.
-- [assets/img](assets/img): fondos y personajes por escena.
+- [assets/css/styles.css](assets/css/styles.css): paleta egea, actores, botones y paneles.
+- [assets/js/script.js](assets/js/script.js): escenas, puesta en escena, diálogo y eventos.
+- [assets/img](assets/img): fondos, personajes y vídeos por escena.
 - [assets/sounds](assets/sounds): música de fondo.
+
+```text
+PRESENTACION GRECIA/
+├── index.html
+├── README.md
+└── assets/
+    ├── css/styles.css
+    ├── js/script.js
+    ├── img/escene_0 … escene_7/
+    └── sounds/music.mp3
+```
 
 ## Assets por escena
 
@@ -180,7 +191,12 @@ http://127.0.0.1:5500
 - **📍**: menú para saltar a cualquier escena.
 - **🔇 / 🔊**: música de fondo (los vídeos no se ven afectados: van siempre mudos).
 - **Burbuja de vídeo**: clic para ampliar; ✕, `Esc` o clic fuera para cerrar.
-- **Teclado**: `Espacio`, `Enter` o `→` avanzan; `←` retrocede; `Esc` cierra overlays.
+- **⛶**: pantalla completa (o la tecla `F`). El mismo botón sale de ella.
+  En iPhone el botón no aparece: Safari no deja poner en pantalla completa nada
+  que no sea un vídeo. Ahí se usa "Añadir a pantalla de inicio" para verlo sin
+  las barras del navegador.
+- **Teclado**: `Espacio`, `Enter` o `→` avanzan; `←` retrocede; `F` pantalla
+  completa; `Esc` cierra overlays.
 
 ## Deep links
 
@@ -191,6 +207,25 @@ http://127.0.0.1:5500
 - `index.html?scene=2&t=0.4` congela el carruaje al 40 % de su recorrido. Es la
   forma cómoda de trazar un `ride.path` nuevo: vas probando valores de `t` y
   ajustas los puntos hasta que las ruedas pisen el suelo en todo el trayecto.
+
+## Rendimiento
+
+Cosas que están hechas a propósito y conviene no deshacer:
+
+- **El canvas solo se repinta cuando cambia** (cambio de escena, fundido,
+  resize, o un fondo que termina de cargar). Repintar un PNG de 2754×1536 en
+  cada frame obligaba además a recalcular los desenfoques de los paneles que
+  van encima.
+- **Todas las animaciones mueven solo `transform` y `opacity`**, que el
+  navegador resuelve en la GPU. Nada anima `box-shadow`, `left`, `width` ni
+  `filter`, que fuerzan repintado o recálculo de layout.
+- **El carruaje se mueve con `transform`**, no con `left`/`bottom`/`height`. Su
+  ancho se calcula a partir de las proporciones del PNG en vez de leerlo del
+  layout, así que no hay reflow en ningún frame.
+- **`will-change` está acotado** a las clases que de verdad están animando
+  (`.is-walking`, `.is-riding`, `.is-posing`), no puesto a lo bruto. Así el
+  arte con `drop-shadow` se rasteriza una vez y luego solo se mueve la capa.
+- **Solo se descarga el vídeo de la escena actual.**
 
 ## Notas
 
@@ -218,4 +253,4 @@ Es decir: **Jenny** cuenta el día 1 entero, **Yined** los días 2 y 3 hasta las
 compras, y **Jenny** cierra con Red Beach & Fira y la frase final.
 
 Para cambiar el reparto, basta con cambiar el `who: 'p1'` / `who: 'p2'` de cada
-línea en `SCENES` ([script.js](script.js)).
+línea en `SCENES` ([assets/js/script.js](assets/js/script.js)).
