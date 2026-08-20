@@ -538,14 +538,20 @@ body {
   background: rgba(4, 14, 22, 0.76);
   backdrop-filter: blur(5px);
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  padding: 3vh 2vw;
   transition: opacity 0.25s ease;
   cursor: pointer;
 }
 
 .panel {
   position: relative;
+  margin: auto;      /* centres while there is room, scrolls when there is not */
+  flex-shrink: 0;
   cursor: default;
   background: linear-gradient(180deg, #123249, #0b2233);
   border: 1px solid rgba(216, 168, 56, 0.45);
@@ -822,6 +828,8 @@ body {
   padding: 1.4rem 1.1rem 0.4rem;
   box-shadow: 0 26px 70px rgba(0, 0, 0, 0.7);
   max-width: 84vw;
+  margin: auto;
+  flex-shrink: 0;
 }
 
 .video-frame::before {
@@ -839,9 +847,12 @@ body {
 }
 
 /* The clips are vertical (720×1280), so drive the size from the height
-   and let the width follow; max-width still catches a landscape one. */
+   and let the width follow; max-width still catches a landscape one.
+   The frame is as wide as its caption needs, so the clip is centred in
+   it rather than the frame being squeezed down to the clip. */
 .video-frame__video {
   display: block;
+  margin-inline: auto;
   height: min(68vh, 620px);
   width: auto;
   max-width: 80vw;
@@ -894,7 +905,30 @@ body {
   transform: scale(1.1);
 }
 
-#videoOverlay { flex-direction: column; gap: 0; }
+#videoOverlay {
+  flex-direction: column;
+  align-items: center;
+  gap: 0;
+}
+
+/* Short landscape phones: trim the chrome so the panels still fit. */
+@media (max-height: 520px) {
+  .overlay { padding: 2vh 2vw; }
+
+  .panel {
+    padding: 1.3rem 1.3rem 1.1rem;
+    min-width: min(360px, 92vw);
+  }
+
+  .panel__title { margin: 0.4rem 0 0.8rem; }
+  .panel__list  { gap: 0.35rem; }
+  .panel__item  { padding: 0.45rem 0.9rem; font-size: 0.82rem; }
+
+  .video-frame { padding: 1rem 0.8rem 0.3rem; }
+  .video-frame__video  { height: min(62vh, 320px); }
+  .video-frame__hint   { margin-top: 0.5rem; }
+  .video-frame__caption { padding: 0.5rem 0 0.4rem; }
+}
 
 @media (max-width: 900px) {
   .video-bubble { bottom: 30%; width: clamp(72px, 12vw, 96px); height: clamp(72px, 12vw, 96px); }

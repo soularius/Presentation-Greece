@@ -241,6 +241,15 @@ Cosas que están hechas a propósito y conviene no deshacer:
 
 ## Notas
 
+- Los overlays (menú y vídeo) **hacen scroll** cuando no caben. Un elemento
+  centrado con flexbox que desborda no se puede desplazar hasta arriba, así que
+  van alineados al inicio y centrados con `margin: auto`, que funciona en los dos
+  casos. En móvil apaisado hay además un bloque `@media (max-height: 520px)` que
+  compacta los paneles.
+- El marco del vídeo lo dimensiona su título, que en un clip 9:16 es más ancho
+  que el propio vídeo, así que **el vídeo va centrado dentro del marco**
+  (`margin-inline: auto`). Es más simple que forzar el marco a encogerse.
+
 - Diseñado para horizontal; en móvil en vertical aparece un aviso para rotar.
 - Si una imagen no aparece, revisar nombre exacto, extensión y ruta.
 
