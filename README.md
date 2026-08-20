@@ -216,6 +216,18 @@ Cosas que están hechas a propósito y conviene no deshacer:
   resize, o un fondo que termina de cargar). Repintar un PNG de 2754×1536 en
   cada frame obligaba además a recalcular los desenfoques de los paneles que
   van encima.
+- **Cada fondo se escala una sola vez** a un canvas fuera de pantalla del tamaño
+  del viewport (`scaledBackground`), y a partir de ahí un fundido son dos
+  volcados planos. Lo importante no es el reescalado en sí (medido: 3 ms por
+  fundido) sino que ese canvas guarda su propio bitmap: pintar la escena 0 ya no
+  puede obligar a **redecodificar** los 8,9 MB del PNG. El de la escena 0 se
+  prepara al arrancar y nunca se descarta, porque *Travel Again* siempre vuelve
+  ahí.
+- **El arte de los personajes se precarga y decodifica al arrancar**, en tiempo
+  libre, y las copias se guardan en `warmArtwork`. Los `<img>` de los actores se
+  reutilizan entre escenas, así que al pulsar *Travel Again* apuntaban al
+  carruaje y al aeropuerto: volver a decodificar los 5 MB de la portada justo en
+  ese clic era lo que hacía pesado el reinicio.
 - **Todas las animaciones mueven solo `transform` y `opacity`**, que el
   navegador resuelve en la GPU. Nada anima `box-shadow`, `left`, `width` ni
   `filter`, que fuerzan repintado o recálculo de layout.

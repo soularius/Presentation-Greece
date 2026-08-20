@@ -231,15 +231,41 @@ SCENE_IDS.forEach((id) => { BACKGROUNDS[id] = loadBackground(SCENES[id].folder);
 
 // Character art per scene, falling back to the scene 0 artwork so a
 // scene without its own p1/p2 still shows somebody.
+function setImageSrc(el, src) {
+  if (!el.src.endsWith(src)) el.src = src;
+}
+
 function setActorSrc(el, folder, name) {
   const fallback = `assets/img/escene_0/${name}.png`;
   const wanted   = `assets/img/${folder}/${name}.png`;
-  if (folder === 'escene_0') { el.src = fallback; return; }
+  if (folder === 'escene_0') { setImageSrc(el, fallback); return; }
 
   const probe = new Image();
-  probe.addEventListener('load',  () => { el.src = wanted; });
-  probe.addEventListener('error', () => { el.src = fallback; });
+  probe.addEventListener('load',  () => { setImageSrc(el, wanted); });
+  probe.addEventListener('error', () => { setImageSrc(el, fallback); });
   probe.src = wanted;
+}
+
+// The actor <img> elements are reused across scenes, so by the time
+// Travel Again runs they are pointing at the chariot and at the airport
+// art. Decoding the opening artwork again right on the click is what
+// made the restart lurch. These copies stay referenced for the life of
+// the page, which keeps the decoded bitmaps around.
+const warmArtwork = [];
+
+function preloadArtwork() {
+  [
+    'assets/img/escene_0/p1.png',
+    'assets/img/escene_0/p2.png',
+    'assets/img/escene_1/p1.png',
+    'assets/img/escene_1/p2.png',
+    'assets/img/escene_2/carraje.png',
+  ].forEach((src) => {
+    const img = new Image();
+    img.src = src;
+    if (img.decode) img.decode().catch(() => {});
+    warmArtwork.push(img);
+  });
 }
 
 // ── Audio ─────────────────────────────────────────────────────
@@ -410,7 +436,7 @@ function drawPlaceholder(sceneId) {
   ctx.restore();
 }
 
-function drawBackgroundImage(img) {
+function drawBackgroundImage(img, target = ctx) {
   const { w, h } = state;
   const imgRatio    = img.naturalWidth / img.naturalHeight;
   const canvasRatio = w / h;
@@ -425,12 +451,55 @@ function drawBackgroundImage(img) {
     drawH = drawW / imgRatio;
     offsetY = (h - drawH) * 0.5;
   }
-  ctx.drawImage(img, offsetX, offsetY, drawW, drawH);
+  target.drawImage(img, offsetX, offsetY, drawW, drawH);
+}
+
+// Resampling a 2754×1536 photo down to the viewport is the single most
+// expensive thing the canvas does, and a cross-fade asks for it on every
+// frame of the fade. Each background is scaled once into an offscreen
+// canvas at display size; after that a fade is two plain blits.
+const bgCache = new Map();          // sceneId → { key, canvas }
+const BG_CACHE_MAX = 4;             // scene 0 is pinned, plus three more
+
+function viewportKey() {
+  return `${Math.round(state.w)}x${Math.round(state.h)}@${window.devicePixelRatio || 1}`;
+}
+
+function evictBackground() {
+  if (bgCache.size <= BG_CACHE_MAX) return;
+  for (const id of bgCache.keys()) {
+    // Scene 0 stays forever: Travel Again always lands there.
+    if (id === 0 || id === state.scene || id === state.prevBg) continue;
+    bgCache.delete(id);
+    return;
+  }
+}
+
+function scaledBackground(sceneId) {
+  const img = BACKGROUNDS[sceneId];
+  if (!isReady(img)) return null;
+
+  const key = viewportKey();
+  const hit = bgCache.get(sceneId);
+  if (hit && hit.key === key) return hit.canvas;
+
+  const dpr = window.devicePixelRatio || 1;
+  const surface = document.createElement('canvas');
+  surface.width  = Math.max(1, Math.round(state.w * dpr));
+  surface.height = Math.max(1, Math.round(state.h * dpr));
+
+  const sctx = surface.getContext('2d');
+  sctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  drawBackgroundImage(img, sctx);
+
+  bgCache.set(sceneId, { key, canvas: surface });
+  evictBackground();
+  return surface;
 }
 
 function paintScene(sceneId) {
-  const img = BACKGROUNDS[sceneId];
-  if (isReady(img)) drawBackgroundImage(img);
+  const surface = scaledBackground(sceneId);
+  if (surface) ctx.drawImage(surface, 0, 0, state.w, state.h);
   else drawPlaceholder(sceneId);
 }
 
@@ -813,6 +882,7 @@ function render() {
 // ── Events ────────────────────────────────────────────────────
 window.addEventListener('resize', () => {
   resizeCanvas();
+  bgCache.clear();
   const cfg = SCENES[state.scene];
   if (cfg && cfg.cast === 'ride') measureRide(cfg);
 });
@@ -902,6 +972,15 @@ function init() {
   }
   applyDeepLink();
   render();
+
+  // Idle work: prepare what Travel Again and the early scenes will need,
+  // after the opening screen is already painted.
+  const warmUp = () => {
+    preloadArtwork();
+    scaledBackground(0);
+  };
+  if (window.requestIdleCallback) requestIdleCallback(warmUp, { timeout: 2000 });
+  else setTimeout(warmUp, 800);
 }
 
 if (document.fonts && document.fonts.ready) {
