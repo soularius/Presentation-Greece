@@ -1,0 +1,715 @@
+/* ══════════════════════════════════════════════════════════════
+   OUR TRIP TO GREECE — Aegean palette
+   ══════════════════════════════════════════════════════════════ */
+:root {
+  --font-display: "Cinzel", "Georgia", serif;
+  --font-ui: "Quicksand", "Trebuchet MS", "Segoe UI", sans-serif;
+
+  --marble:     #f7f2e7;
+  --marble-dim: #ddd3bf;
+  --gold:       #d8a838;
+  --gold-soft:  #f0cd76;
+  --aegean:     #1b4965;
+  --aegean-dk:  #0d2a3e;
+  --aegean-lt:  #2f7ba6;
+  --ink:        #10202c;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  overflow: hidden;
+  font-family: var(--font-ui);
+  background: var(--aegean-dk);
+}
+
+.scene-wrap {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  height: 100dvh;
+}
+
+#sceneCanvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.hidden { opacity: 0 !important; pointer-events: none !important; }
+
+/* ── Actors ─────────────────────────────────────────────────────
+   .actor            → placed per scene from JS (left / bottom / height)
+   .actor__travel    → horizontal walk-in
+   .actor__img       → walking bob + sway
+   .actor__shadow    → contact shadow on the ground
+   ─────────────────────────────────────────────────────────────── */
+.actor {
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  height: 74vh;
+  z-index: 3;
+  transform: translateX(-50%);
+  user-select: none;
+  pointer-events: none;
+  transition: opacity 0.45s ease, height 0.5s ease, left 0.5s ease, bottom 0.5s ease;
+}
+
+.actor.hidden { opacity: 0; }
+
+.actor__travel {
+  position: relative;
+  display: inline-block;
+  height: 100%;
+}
+
+.actor__img {
+  display: block;
+  height: 100%;
+  width: auto;
+  transform-origin: 50% 100%;
+  filter: drop-shadow(0 16px 26px rgba(0, 0, 0, 0.42));
+}
+
+.actor__shadow {
+  position: absolute;
+  left: 50%;
+  bottom: 0.4%;
+  width: 68%;
+  height: 3.4%;
+  transform: translateX(-50%);
+  background: radial-gradient(ellipse at center, rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0) 70%);
+  filter: blur(3px);
+  opacity: 0;
+  transition: opacity 0.5s ease;
+}
+
+.actor.is-grounded .actor__shadow { opacity: 1; }
+
+/* Standing still — the opening and closing scenes */
+.actor.is-posing .actor__img {
+  animation: idleBreath 6.2s ease-in-out infinite;
+}
+
+.actor.is-posing.actor--b .actor__img { animation-duration: 6.9s; }
+
+@keyframes idleBreath {
+  0%, 100% { transform: translateY(0)      scale(1); }
+  50%      { transform: translateY(-0.35%) scale(1.004); }
+}
+
+/* Walking into the scene, then strolling in place */
+.actor.is-walking .actor__travel {
+  animation: walkIn 2.5s cubic-bezier(0.26, 0.72, 0.32, 1) both;
+}
+
+.actor.is-walking.actor--b .actor__travel { animation-delay: 0.3s; }
+
+.actor.is-walking .actor__img {
+  animation: walkBob 0.86s ease-in-out infinite;
+}
+
+.actor.is-walking.actor--b .actor__img { animation-delay: 0.43s; }
+
+.actor.is-walking .actor__shadow {
+  animation: shadowStep 0.86s ease-in-out infinite;
+}
+
+.actor.is-walking.actor--b .actor__shadow { animation-delay: 0.43s; }
+
+/* Arrived: the stride settles into a slow sway */
+.actor.is-walking.is-arrived .actor__img {
+  animation: strollBob 2.9s ease-in-out infinite;
+}
+
+.actor.is-walking.is-arrived .actor__shadow {
+  animation: shadowSway 2.9s ease-in-out infinite;
+}
+
+@keyframes walkIn {
+  0%   { transform: translateX(-52vw); opacity: 0; }
+  12%  { opacity: 1; }
+  100% { transform: translateX(0); opacity: 1; }
+}
+
+/* Riding: position, size and opacity are driven per frame from JS so
+   the sprite stays glued to the road as it comes toward the camera. */
+.actor.is-riding {
+  transition: opacity 0.3s ease;
+}
+
+.actor.is-riding .actor__travel { animation: none; }
+
+.actor.is-riding .actor__img {
+  animation: rideRattle 0.32s ease-in-out infinite;
+}
+
+.actor.is-riding .actor__shadow {
+  animation: rideShadow 0.32s ease-in-out infinite;
+}
+
+/* Parked at the end of a one-shot ride */
+.actor.is-riding.is-arrived .actor__img {
+  animation: strollBob 3.2s ease-in-out infinite;
+}
+
+.actor.is-riding.is-arrived .actor__shadow {
+  animation: shadowSway 3.2s ease-in-out infinite;
+}
+
+@keyframes rideRattle {
+  0%, 100% { transform: translateY(0)     rotate(-0.3deg); }
+  50%      { transform: translateY(-0.9%) rotate(0.3deg); }
+}
+
+@keyframes rideShadow {
+  0%, 100% { transform: translateX(-50%) scaleX(1);    opacity: 0.9; }
+  50%      { transform: translateX(-50%) scaleX(0.93); opacity: 0.7; }
+}
+
+/* Sprites that face right-to-left enter from the other side */
+.actor.from-right.is-walking .actor__travel {
+  animation-name: walkInRight;
+}
+
+@keyframes walkInRight {
+  0%   { transform: translateX(58vw); opacity: 0; }
+  12%  { opacity: 1; }
+  100% { transform: translateX(0); opacity: 1; }
+}
+
+@keyframes walkBob {
+  0%, 100% { transform: translateY(0)     rotate(-0.7deg); }
+  25%      { transform: translateY(-1.5%) rotate(0deg); }
+  50%      { transform: translateY(0)     rotate(0.7deg); }
+  75%      { transform: translateY(-1.5%) rotate(0deg); }
+}
+
+@keyframes shadowStep {
+  0%, 50%, 100% { transform: translateX(-50%) scaleX(1);    opacity: 1; }
+  25%, 75%      { transform: translateX(-50%) scaleX(0.86); opacity: 0.72; }
+}
+
+@keyframes strollBob {
+  0%, 100% { transform: translateY(0)     rotate(-0.35deg); }
+  50%      { transform: translateY(-0.6%) rotate(0.35deg); }
+}
+
+@keyframes shadowSway {
+  0%, 100% { transform: translateX(-50%) scaleX(1);    opacity: 1; }
+  50%      { transform: translateX(-50%) scaleX(0.94); opacity: 0.86; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .actor__img,
+  .actor__travel,
+  .actor__shadow { animation: none !important; }
+}
+
+/* ── Hero (scene 0) ─────────────────────────────────────────── */
+.hero {
+  position: absolute;
+  left: 50%;
+  top: 39%;
+  transform: translate(-50%, -50%);
+  z-index: 4;
+  text-align: center;
+  padding: 2.2rem 3rem 2.4rem;
+  border-radius: 4px;
+  background: rgba(10, 28, 42, 0.55);
+  backdrop-filter: blur(7px);
+  border: 1px solid rgba(216, 168, 56, 0.42);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.45), inset 0 0 0 6px rgba(247, 242, 231, 0.05);
+  transition: opacity 0.45s ease, transform 0.5s ease;
+  max-width: min(46vw, 620px);
+}
+
+.hero::before,
+.hero::after {
+  content: "";
+  position: absolute;
+  left: 8%;
+  right: 8%;
+  height: 8px;
+  background:
+    repeating-linear-gradient(90deg,
+      var(--gold) 0 3px, transparent 3px 7px,
+      var(--gold) 7px 10px, transparent 10px 20px);
+  opacity: 0.75;
+}
+
+.hero::before { top: 0.9rem; }
+.hero::after  { bottom: 0.9rem; }
+
+.hero.hidden { transform: translate(-50%, -54%) scale(0.97); }
+
+.hero__eyebrow {
+  margin: 0 0 0.55rem;
+  font-family: var(--font-ui);
+  font-size: clamp(0.62rem, 1.1vw, 0.78rem);
+  letter-spacing: 0.34em;
+  text-transform: uppercase;
+  color: var(--gold-soft);
+  opacity: 0.85;
+}
+
+.hero__title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: clamp(1.9rem, 4.4vw, 3.5rem);
+  line-height: 1.06;
+  letter-spacing: 0.03em;
+  color: var(--marble);
+  text-shadow: 0 3px 18px rgba(0, 0, 0, 0.6);
+}
+
+.hero__title span {
+  display: block;
+  color: var(--gold);
+  text-shadow: 0 0 26px rgba(216, 168, 56, 0.45), 0 3px 14px rgba(0, 0, 0, 0.6);
+}
+
+.hero__sub {
+  margin: 0.7rem 0 1.5rem;
+  font-size: clamp(0.78rem, 1.5vw, 1rem);
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: rgba(247, 242, 231, 0.72);
+}
+
+.hero__btn { margin-top: 0.2rem; }
+
+/* ── Day badge ──────────────────────────────────────────────── */
+.day-badge {
+  position: absolute;
+  top: 5.5%;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 5;
+  text-align: center;
+  padding: 0.55rem 2.1rem 0.65rem;
+  background: rgba(10, 28, 42, 0.62);
+  backdrop-filter: blur(6px);
+  border-top: 2px solid var(--gold);
+  border-bottom: 2px solid var(--gold);
+  transition: opacity 0.4s ease, transform 0.45s ease;
+  white-space: nowrap;
+}
+
+.day-badge.hidden { transform: translateX(-50%) translateY(-12px); }
+
+.day-badge__num {
+  display: block;
+  font-family: var(--font-ui);
+  font-weight: 700;
+  font-size: clamp(0.56rem, 1vw, 0.7rem);
+  letter-spacing: 0.36em;
+  text-transform: uppercase;
+  color: var(--gold-soft);
+}
+
+.day-badge__place {
+  display: block;
+  margin-top: 0.15rem;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: clamp(1rem, 2.1vw, 1.5rem);
+  letter-spacing: 0.08em;
+  color: var(--marble);
+  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.6);
+}
+
+/* ── Dialogue bar ───────────────────────────────────────────── */
+.dialogue {
+  position: absolute;
+  left: 50%;
+  bottom: 4.5%;
+  transform: translateX(-50%);
+  z-index: 6;
+  width: min(88vw, 1240px);
+  --speaker: var(--gold);
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: clamp(0.7rem, 1.6vw, 1.2rem);
+  padding: clamp(0.7rem, 1.4vw, 1rem) clamp(0.9rem, 1.8vw, 1.3rem);
+  background: rgba(9, 26, 39, 0.86);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(216, 168, 56, 0.4);
+  border-radius: 6px;
+  box-shadow: 0 18px 46px rgba(0, 0, 0, 0.5);
+  transition: opacity 0.4s ease, transform 0.45s ease;
+}
+
+.dialogue.hidden { transform: translateX(-50%) translateY(16px); }
+
+/* One colour per speaker, so each presenter spots their turn */
+.dialogue--p1 { --speaker: #f0cd76; }
+.dialogue--p2 { --speaker: #7ec8ea; }
+
+.dialogue::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: -1px;
+  height: 3px;
+  background: linear-gradient(90deg, transparent, var(--speaker), transparent);
+  transition: background 0.3s ease;
+}
+
+.dialogue__avatar {
+  width: clamp(58px, 7.4vw, 92px);
+  height: clamp(58px, 7.4vw, 92px);
+  border-radius: 50%;
+  object-fit: cover;
+  background: var(--marble);
+  border: 3px solid var(--speaker);
+  box-shadow: 0 0 0 3px rgba(9, 26, 39, 0.9), 0 0 18px -2px var(--speaker),
+              0 6px 18px rgba(0, 0, 0, 0.45);
+  transition: opacity 0.22s ease, transform 0.22s ease,
+              border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.dialogue__avatar.swap { opacity: 0; transform: scale(0.86); }
+
+.dialogue__body { min-width: 0; }
+
+.dialogue__name {
+  display: block;
+  font-size: clamp(0.6rem, 1.1vw, 0.78rem);
+  font-weight: 700;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--speaker);
+  margin-bottom: 0.3rem;
+  transition: color 0.3s ease;
+}
+
+/* Sized to be read aloud from across a classroom */
+.dialogue__text {
+  margin: 0;
+  font-family: var(--font-ui);
+  font-weight: 600;
+  font-size: clamp(1.05rem, 2.35vw, 1.9rem);
+  line-height: 1.34;
+  color: var(--marble);
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+  min-height: 1.34em;
+  text-wrap: balance;
+}
+
+.dialogue__text.is-fresh { animation: lineIn 0.32s ease both; }
+
+@keyframes lineIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dialogue__text.is-fresh { animation: none; }
+}
+
+.dialogue__next { white-space: nowrap; }
+
+/* ── Buttons ────────────────────────────────────────────────── */
+.btn {
+  border: 1px solid rgba(247, 242, 231, 0.22);
+  border-radius: 3px;
+  padding: 0.66rem 1.6rem;
+  font-family: var(--font-ui);
+  font-weight: 700;
+  font-size: clamp(0.78rem, 1.5vw, 0.98rem);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: transform 0.16s ease, box-shadow 0.16s ease, filter 0.16s ease, opacity 0.35s ease;
+}
+
+.btn:hover  { transform: translateY(-2px); filter: brightness(1.08); }
+.btn:active { transform: translateY(1px); filter: brightness(0.95); }
+
+.btn--gold {
+  color: var(--ink);
+  background: linear-gradient(170deg, var(--gold-soft), var(--gold));
+  border-color: rgba(255, 232, 170, 0.5);
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.42), inset 0 1px 0 rgba(255, 255, 255, 0.5);
+}
+
+.btn--blue {
+  color: var(--marble);
+  background: linear-gradient(170deg, var(--aegean-lt), var(--aegean-dk));
+  border-color: rgba(140, 205, 240, 0.34);
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.42), inset 0 1px 0 rgba(255, 255, 255, 0.16);
+}
+
+.hero__btn {
+  padding: 0.85rem 2.5rem;
+  font-size: clamp(0.86rem, 1.8vw, 1.1rem);
+  animation: gleam 2.6s ease-in-out infinite;
+}
+
+@keyframes gleam {
+  0%, 100% {
+    box-shadow: 0 8px 22px rgba(0, 0, 0, 0.42), 0 0 0 0 rgba(216, 168, 56, 0.5),
+                inset 0 1px 0 rgba(255, 255, 255, 0.5);
+  }
+  55% {
+    box-shadow: 0 8px 22px rgba(0, 0, 0, 0.42), 0 0 0 16px rgba(216, 168, 56, 0),
+                inset 0 1px 0 rgba(255, 255, 255, 0.5);
+  }
+}
+
+.back-btn {
+  position: fixed;
+  top: 4%;
+  left: 2.4%;
+  z-index: 12;
+}
+
+.menu-btn,
+.music-btn {
+  position: fixed;
+  z-index: 12;
+  width: clamp(44px, 6.4vw, 52px);
+  height: clamp(44px, 6.4vw, 52px);
+  padding: 0;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-size: clamp(1rem, 2vw, 1.25rem);
+  letter-spacing: 0;
+}
+
+.menu-btn  { top: 4%; right: 2.4%; }
+.music-btn { top: calc(4% + clamp(52px, 7.6vw, 62px)); right: 2.4%; }
+
+.music-btn.is-muted {
+  background: linear-gradient(170deg, #6a3232, #331717);
+  border-color: rgba(255, 178, 178, 0.4);
+}
+
+.music-btn.is-unmuted {
+  background: linear-gradient(170deg, #2b6b46, #143222);
+  border-color: rgba(180, 255, 205, 0.4);
+}
+
+.credits-btn {
+  position: fixed;
+  bottom: 0.9%;
+  right: 1.4%;
+  z-index: 12;
+  background: rgba(9, 26, 39, 0.6);
+  border: 1px solid rgba(216, 168, 56, 0.4);
+  border-radius: 999px;
+  color: rgba(240, 205, 118, 0.75);
+  font-family: var(--font-ui);
+  font-size: clamp(0.52rem, 0.9vw, 0.64rem);
+  letter-spacing: 0.08em;
+  cursor: pointer;
+  padding: 4px 11px;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+.credits-btn:hover {
+  background: rgba(9, 26, 39, 0.92);
+  color: var(--gold-soft);
+}
+
+/* ── Overlays & panels ──────────────────────────────────────── */
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  background: rgba(4, 14, 22, 0.76);
+  backdrop-filter: blur(5px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.25s ease;
+  cursor: pointer;
+}
+
+.panel {
+  position: relative;
+  cursor: default;
+  background: linear-gradient(180deg, #123249, #0b2233);
+  border: 1px solid rgba(216, 168, 56, 0.45);
+  border-radius: 6px;
+  padding: 2.1rem 2.3rem 1.9rem;
+  min-width: min(420px, 90vw);
+  max-width: min(460px, 90vw);
+  box-shadow: 0 26px 70px rgba(0, 0, 0, 0.7);
+}
+
+.panel::before {
+  content: "";
+  position: absolute;
+  left: 1.6rem;
+  right: 1.6rem;
+  top: 0.85rem;
+  height: 7px;
+  background:
+    repeating-linear-gradient(90deg,
+      var(--gold) 0 3px, transparent 3px 7px,
+      var(--gold) 7px 10px, transparent 10px 20px);
+  opacity: 0.6;
+}
+
+.panel__title {
+  text-align: center;
+  font-family: var(--font-display);
+  font-size: clamp(0.95rem, 2vw, 1.2rem);
+  font-weight: 700;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  color: var(--gold-soft);
+  margin: 0.7rem 0 1.3rem;
+}
+
+.panel__list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.panel__item {
+  width: 100%;
+  border: 1px solid rgba(216, 168, 56, 0.22);
+  border-radius: 3px;
+  padding: 0.66rem 1.1rem;
+  font-family: var(--font-ui);
+  font-size: clamp(0.8rem, 1.6vw, 0.95rem);
+  font-weight: 600;
+  text-align: left;
+  color: var(--marble);
+  background: rgba(255, 255, 255, 0.05);
+  cursor: pointer;
+  transition: background 0.15s ease, transform 0.14s ease, border-color 0.15s ease;
+}
+
+.panel__item:hover {
+  background: rgba(216, 168, 56, 0.18);
+  border-color: rgba(216, 168, 56, 0.55);
+  transform: translateX(5px);
+}
+
+.panel__close {
+  position: absolute;
+  top: 0.45rem;
+  right: 0.7rem;
+  border: 0;
+  background: transparent;
+  color: rgba(247, 242, 231, 0.45);
+  font-size: 1rem;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0.35rem;
+  transition: color 0.15s ease;
+}
+
+.panel__close:hover { color: var(--gold-soft); }
+
+.panel--credits { font-family: var(--font-ui); }
+
+.credits__section {
+  border-bottom: 1px dashed rgba(216, 168, 56, 0.28);
+  padding-bottom: 0.7rem;
+  margin-bottom: 0.7rem;
+}
+
+.credits__section:last-of-type {
+  border-bottom: none;
+  margin-bottom: 1rem;
+}
+
+.credits__heading {
+  font-size: clamp(0.58rem, 1.05vw, 0.7rem);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--gold);
+  font-weight: 700;
+  margin: 0 0 0.3rem;
+}
+
+.credits__text {
+  font-size: clamp(0.72rem, 1.3vw, 0.84rem);
+  color: rgba(247, 242, 231, 0.88);
+  margin: 0;
+  line-height: 1.55;
+}
+
+.credits__author {
+  text-align: center;
+  font-size: clamp(0.58rem, 1.05vw, 0.68rem);
+  color: rgba(247, 242, 231, 0.4);
+  margin: 0;
+  letter-spacing: 0.08em;
+  font-style: italic;
+}
+
+/* ── Responsive ─────────────────────────────────────────────── */
+@media (max-width: 900px) {
+  .hero { max-width: min(70vw, 460px); padding: 1.7rem 2rem 1.9rem; }
+  .dialogue { width: min(94vw, 860px); bottom: 3.2%; }
+}
+
+@media (max-width: 560px) {
+  .actor { opacity: 0.55; }
+  .hero { max-width: 86vw; }
+  .dialogue { width: 94vw; gap: 0.6rem; padding: 0.6rem 0.7rem; }
+  .dialogue__next { padding: 0.55rem 0.9rem; font-size: 0.68rem; }
+  .day-badge { padding: 0.4rem 1.2rem 0.5rem; }
+  .back-btn { padding: 0.5rem 1rem; }
+}
+
+/* ── Rotate overlay ─────────────────────────────────────────── */
+.rotate-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: var(--aegean-dk);
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1.1rem;
+}
+
+.rotate-overlay__phone {
+  font-size: 3.4rem;
+  animation: tilt-phone 1.4s ease-in-out infinite;
+}
+
+.rotate-overlay__text {
+  margin: 0;
+  color: var(--gold-soft);
+  font-family: var(--font-display);
+  font-size: 1.2rem;
+  font-weight: 700;
+}
+
+.rotate-overlay__sub {
+  margin: 0;
+  color: rgba(247, 242, 231, 0.5);
+  font-size: 0.82rem;
+}
+
+@keyframes tilt-phone {
+  0%   { transform: rotate(0deg); }
+  40%  { transform: rotate(90deg); }
+  60%  { transform: rotate(90deg); }
+  100% { transform: rotate(0deg); }
+}
+
+@media screen and (orientation: portrait) and (max-width: 767px) {
+  .rotate-overlay { display: flex; }
+}

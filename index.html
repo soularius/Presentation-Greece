@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Our Trip to Greece</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ctext y='26' font-size='26'%3E%F0%9F%8F%9B%EF%B8%8F%3C/text%3E%3C/svg%3E" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&family=Quicksand:wght@500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <main class="scene-wrap">
+    <canvas id="sceneCanvas" aria-label="Trip scene"></canvas>
+
+    <div id="actor1" class="actor">
+      <div class="actor__travel">
+        <div class="actor__shadow"></div>
+        <img id="p1" class="actor__img" src="assets/img/escene_0/p1.png" alt="Jenny" draggable="false" />
+      </div>
+    </div>
+
+    <div id="actor2" class="actor actor--b">
+      <div class="actor__travel">
+        <div class="actor__shadow"></div>
+        <img id="p2" class="actor__img" src="assets/img/escene_0/p2.png" alt="Yined" draggable="false" />
+      </div>
+    </div>
+
+    <!-- Opening scene -->
+    <div id="hero" class="hero">
+      <p class="hero__eyebrow">A three-day journey</p>
+      <h1 class="hero__title">Our Trip to <span>Greece</span></h1>
+      <p class="hero__sub">Athens &middot; Santorini</p>
+      <button id="startBtn" class="btn btn--gold hero__btn" type="button">Start the Trip</button>
+    </div>
+
+    <!-- Day badge -->
+    <div id="dayBadge" class="day-badge hidden">
+      <span id="dayBadgeNum" class="day-badge__num">Day 1</span>
+      <span id="dayBadgePlace" class="day-badge__place">Athens</span>
+    </div>
+
+    <!-- Dialogue bar -->
+    <div id="dialogue" class="dialogue hidden">
+      <img id="dialogueAvatar" class="dialogue__avatar" src="assets/img/escene_0/p1_face.png" alt="Speaker" />
+      <div class="dialogue__body">
+        <span id="dialogueName" class="dialogue__name">Jenny</span>
+        <p id="dialogueText" class="dialogue__text"></p>
+      </div>
+      <button id="nextBtn" class="btn btn--gold dialogue__next" type="button">Next</button>
+    </div>
+  </main>
+
+  <button id="backBtn" class="btn btn--blue back-btn hidden" type="button">&#8592; Back</button>
+  <button id="menuBtn" class="btn btn--blue menu-btn" type="button" aria-label="Go to a scene">&#128205;</button>
+  <button id="musicBtn" class="btn btn--blue music-btn" type="button" aria-label="Muted audio" title="Muted audio">&#128263;</button>
+  <button id="creditsBtn" class="credits-btn" type="button">Sources &amp; Credits</button>
+
+  <div id="sceneMenu" class="overlay hidden" role="dialog" aria-modal="true" aria-label="Scene selector">
+    <div class="panel">
+      <button id="closeMenuBtn" class="panel__close" type="button" aria-label="Close">&#10005;</button>
+      <h2 class="panel__title">Jump to a Scene</h2>
+      <div class="panel__list">
+        <button class="panel__item" data-target="0">&#127963;&#65039; Start &ndash; Welcome to Greece</button>
+        <button class="panel__item" data-target="1">&#9992;&#65039; Day 1 &ndash; Athens Airport</button>
+        <button class="panel__item" data-target="2">&#128052; Day 1 &ndash; Around the City</button>
+        <button class="panel__item" data-target="3">&#127963;&#65039; Day 1 &ndash; Acropolis &amp; Parthenon</button>
+        <button class="panel__item" data-target="4">&#127749; Day 2 &ndash; Santorini: Oia &amp; the Caldera</button>
+        <button class="panel__item" data-target="5">&#128717;&#65039; Day 3 &ndash; Shops &amp; the City</button>
+        <button class="panel__item" data-target="6">&#127958;&#65039; Day 3 &ndash; Red Beach &amp; Fira</button>
+        <button class="panel__item" data-target="7">&#10024; Goodbye, Greece</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="creditsOverlay" class="overlay hidden" role="dialog" aria-modal="true" aria-label="Credits and sources">
+    <div class="panel panel--credits">
+      <button id="closeCreditsBtn" class="panel__close" type="button" aria-label="Close">&#10005;</button>
+      <h2 class="panel__title">Sources &amp; Credits</h2>
+
+      <div class="credits__section">
+        <h3 class="credits__heading">Images &amp; Graphics</h3>
+        <p class="credits__text">Generated with Google Gemini</p>
+      </div>
+
+      <div class="credits__section">
+        <h3 class="credits__heading">Story</h3>
+        <p class="credits__text">Our Trip to Greece &mdash; English class presentation</p>
+      </div>
+
+      <div class="credits__section">
+        <h3 class="credits__heading">Music</h3>
+        <p class="credits__text">assets/sounds/music.mp3</p>
+      </div>
+
+      <p class="credits__author">Ideas, design &amp; creation &middot; Yined Molina</p>
+    </div>
+  </div>
+
+  <div class="rotate-overlay" aria-hidden="true">
+    <div class="rotate-overlay__phone">&#128241;</div>
+    <p class="rotate-overlay__text">Rotate your device</p>
+    <p class="rotate-overlay__sub">This experience requires landscape orientation</p>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
