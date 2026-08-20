@@ -1,11 +1,17 @@
 # PRESENTACION GRECIA — Our Trip to Greece
 
 Presentación interactiva en Canvas que cuenta, en inglés, un viaje de tres días
-por Grecia (Atenas y Santorini). Versión simplificada de
-[PRESENTACION FLAM](../PRESENTACION%20FLAM), con dos personajes: **Jenny** (`p1`)
-y **Yined** (`p2`).
+por Grecia. Ocho escenas ilustradas narradas como diálogo entre **Jenny** y
+**Yined**, pensada para proyectarse en clase mientras ellas leen las frases en
+voz alta.
 
-## Historia
+Inspirada en [PRESENTACION FLAM](../PRESENTACION%20FLAM), pero más directa: sin
+mapas ni bifurcaciones, una ilustración a pantalla completa por momento de la
+historia.
+
+---
+
+## La historia
 
 > On our first day, we are going to arrive in Athens. We are going to walk around
 > the city and see amazing places like the Acropolis and the Parthenon.
@@ -18,244 +24,42 @@ y **Yined** (`p2`).
 > going to take a lot of photos and visit some local shops. We are also going to
 > see the Red Beach and Fira. It is going to be a great trip!
 
-El texto está repartido como diálogo entre **Jenny** y **Yined**: cada frase es un
-turno con su avatar. **Ellas leen las frases en voz alta durante la presentación**,
-así que la pantalla es apoyo, no narrador: la frase aparece entera y grande desde
-el primer momento, y se avanza a mano, con lo que el ritmo lo marcan ellas.
+**La pantalla es apoyo, no narrador.** Jenny y Yined dicen las frases en voz alta,
+así que cada frase aparece entera y grande desde el primer instante — sin efecto
+de tecleado, que obligaría a esperar para leer — y se avanza a mano, con lo que
+el ritmo lo marcan ellas.
 
-Para no perder el turno, cada una tiene su color: **Jenny en dorado** y
-**Yined en azul**. El aro del avatar, el nombre y la línea superior de la barra
-cambian de color según a quién le toca hablar.
+Para no perder el turno, cada una tiene su color, que cambia a la vez en el aro
+del avatar, el nombre y la línea superior de la barra:
 
-En el código y en los nombres de archivo se siguen llamando `p1` (Jenny) y
-`p2` (Yined); los nombres visibles están en `SPEAKERS`, en [assets/js/script.js](assets/js/script.js).
+| | Clave interna | Color | Avatar |
+|---|---|---|---|
+| **Jenny** | `p1` | dorado `#f0cd76` | `escene_0/p1_face.png` |
+| **Yined** | `p2` | azul `#7ec8ea` | `escene_0/p2_face.png` |
 
-## Escenas
+En el código y en los nombres de archivo se siguen llamando `p1` y `p2`; los
+nombres visibles salen de `SPEAKERS`, en [assets/js/script.js](assets/js/script.js).
 
-Ocho escenas ilustradas. La 0 es la portada; el resto (`story`) muestran una
-ilustración a pantalla completa con una o varias frases del diálogo.
+---
 
-| # | Carpeta | Día | Escena | Frases |
-|---|---------|-----|--------|--------|
-| 0 | `escene_0` | — | Portada: Delfos, Jenny y Yined, botón *Start the Trip* | — |
-| 1 | `escene_1` | Day 1 | Athens Airport | 1 |
-| 2 | `escene_2` | Day 1 | Around the City (recorren la calle en el carruaje) | 1 |
-| 3 | `escene_3` | Day 1 | Acropolis & Parthenon | 1 |
-| 4 | `escene_4` | Day 2 | Santorini · Oia & the Caldera | 3 |
-| 5 | `escene_5` | Day 3 | Shops & the City | 2 |
-| 6 | `escene_6` | Day 3 | Red Beach & Fira | 1 |
-| 7 | `escene_7` | The End | Goodbye, Greece | 1 |
+## Las ocho escenas
 
-Son diez frases en total; el reparto está más abajo. En la última, el botón pasa
-a ser *Travel Again ↻* y vuelve a la portada.
+| # | Carpeta | Día | Escena | Personajes | Frases | Vídeo |
+|---|---------|-----|--------|-----------|--------|-------|
+| 0 | `escene_0` | — | Portada — Delfos | `pose` | — | — |
+| 1 | `escene_1` | Day 1 | Athens Airport | `walk` | 1 | — |
+| 2 | `escene_2` | Day 1 | Around the City | `ride` | 1 | — |
+| 3 | `escene_3` | Day 1 | Acropolis & Parthenon | `none` | 1 | ✔ |
+| 4 | `escene_4` | Day 2 | Santorini · Oia & the Caldera | `none` | 3 | ✔ |
+| 5 | `escene_5` | Day 3 | Shops & the City | `none` | 2 | ✔ |
+| 6 | `escene_6` | Day 3 | Red Beach & Fira | `none` | 1 | ✔ |
+| 7 | `escene_7` | The End | Goodbye, Greece | `none` | 1 | — |
 
-### Cómo añadir una escena nueva
+El botón de avance se etiqueta solo: `Next ▸` mientras queden frases en la
+escena, `Day 2 ▸` / `Day 3 ▸` / `The End ▸` cuando la siguiente escena cambia de
+día, y `Travel Again ↻` en la última, que vuelve a la portada.
 
-Todo vive en el objeto `SCENES` de [assets/js/script.js](assets/js/script.js). Cada entrada declara
-su propia carpeta de assets, así que renumerar es cambiar una cadena:
-
-```js
-1: {
-  kind: 'story',
-  folder: 'escene_1',
-  day: 'Day 1',
-  place: 'Athens Airport',
-  cast: 'walk',                         // 'pose' | 'walk' | 'ride' | 'none'
-  stage: { p1: { x: 36, y: 1, h: 63 },  // x, y en % · h en vh
-           p2: { x: 58, y: 6, h: 55 } },
-  lines: [{ who: 'p1', text: 'On our first day, we are going to arrive in Athens.' }],
-},
-```
-
-- `cast: 'walk'` → las dos entran caminando, con rebote de paso y sombra de
-  contacto, y luego pasan a un balanceo lento. Usa `p1.png` / `p2.png`.
-- `cast: 'ride'` → un solo sprite combinado (`sprite: 'carraje.png'`) que recorre
-  la escena siguiendo `ride.path`. Cada punto del camino lleva posición **y**
-  tamaño, así que el sprite cambia de escala según la profundidad y las ruedas
-  no quedan flotando. Es lo que usa la escena 2 con el carruaje.
-  - `ride.loop: false` → hace el recorrido una sola vez, frena suavemente al
-    llegar y se queda aparcado ahí hasta que se pulsa *Next*. Con `loop: true`
-    (o sin la clave) da vueltas sin parar.
-  - `ride.duration` → milisegundos que tarda el trayecto completo.
-- `video: 'video.mp4'` → muestra la burbuja de vídeo (ver más abajo).
-- `cast: 'pose'` → quietos, solo respiración.
-- `cast: 'none'` → los personajes ya están pintados en el fondo (escenas 3 a 7).
-- `enter: 'right'` → entran por la derecha en vez de por la izquierda. Ponlo
-  según hacia dónde mire el dibujo (el caballo del carro mira a la izquierda).
-- `stage` es lo que se ajusta para “ubicarlas bien” en cada fondo: `x` es el
-  centro horizontal, `y` la separación del borde inferior y `h` la altura.
-  Con `walk` lleva `{ p1, p2 }`; con `ride`, una sola posición.
-
-Al añadir una escena, acuérdate de sumar su botón en el menú de
-[index.html](index.html) (`.panel__item` con `data-target`).
-
-## Tecnologías
-
-- HTML5
-- CSS3 (Google Fonts: Cinzel + Quicksand)
-- JavaScript (vanilla)
-- Canvas 2D
-
-## Estructura
-
-- [index.html](index.html): estructura, diálogo, menú y overlays.
-- [assets/css/styles.css](assets/css/styles.css): paleta egea, actores, botones y paneles.
-- [assets/js/script.js](assets/js/script.js): escenas, puesta en escena, diálogo y eventos.
-- [assets/img](assets/img): fondos, personajes y vídeos por escena.
-- [assets/sounds](assets/sounds): música de fondo.
-
-```text
-PRESENTACION GRECIA/
-├── index.html
-├── README.md
-└── assets/
-    ├── css/styles.css
-    ├── js/script.js
-    ├── img/escene_0 … escene_7/
-    └── sounds/music.mp3
-```
-
-## Assets por escena
-
-Cada carpeta `assets/img/escene_N/` admite:
-
-| Archivo | Escenas | Obligatorio |
-|---------|---------|-------------|
-| `background.png` (o `.jpg`) | todas | recomendado |
-| `p1.png` / `p2.png` | las que usen `cast: 'walk'` o `'pose'` | no |
-| sprite suelto (ej. `carraje.png`) | las que usen `cast: 'ride'` | sí |
-| `video.mp4` | las que declaren `video:` (3, 4, 5 y 6) | no |
-| `p1_face.png` / `p2_face.png` | solo `escene_0` | sí (avatares del diálogo) |
-
-Notas:
-
-- Si falta un fondo, el canvas dibuja un **placeholder egeo** con el nombre de la
-  escena y la ruta exacta del archivo que espera. Nada se rompe.
-- Si una escena con `cast: 'walk'` no trae sus propios `p1.png` / `p2.png`, se
-  reutilizan los de `escene_0` automáticamente.
-- Los avatares `p1_face.png` / `p2_face.png` son recortes cuadrados de la cara.
-  Para regenerarlos desde `p1.png` / `p2.png`:
-
-  ```bash
-  python -c "from PIL import Image; Image.open('p1.png').crop((380,0,940,560)).resize((420,420)).save('p1_face.png')"
-  ```
-
-- La música vive en `assets/sounds/music.mp3` y arranca en silencio: el botón 🔇
-  la activa (los navegadores no dejan reproducir audio sin un clic previo).
-
-Todas las escenas (0–7) tienen ya su fondo y su arte de personajes.
-
-## Vídeos
-
-Las escenas que declaran `video: 'video.mp4'` muestran una **burbuja circular**
-abajo a la izquierda con el clip reproduciéndose en pequeño. Alrededor le salen
-dos anillos que se expanden — el mismo gesto de invitación que los botones que
-laten en PRESENTACION FLAM — para que se note que se puede pulsar. Al hacer clic
-se abre en grande, centrado y enmarcado; se cierra con la ✕, con `Esc` o
-pulsando en cualquier sitio.
-
-Los clips **siempre van en bucle infinito y siempre en silencio**, y no hay forma
-de activarles el sonido:
-
-- No llevan controles nativos.
-- Un listener de `volumechange` devuelve el vídeo a silencio si algo intenta
-  subirle el volumen (por ejemplo el menú del botón derecho de Chrome, que
-  permite mostrar los controles).
-- El menú contextual sobre el vídeo está desactivado.
-
-Solo se descarga el vídeo de la escena en la que estás: al cambiar de escena se
-libera el anterior. Así los cuatro clips (unos 12 MB en total) nunca se cargan a
-la vez.
-
-Los actuales son verticales (720×1280); la vista ampliada se dimensiona por
-altura, así que un clip horizontal también encajaría.
-
-## Cómo ejecutar
-
-Con Live Server en VS Code, o con cualquier servidor estático:
-
-```bash
-python -m http.server 5500
-```
-
-Luego abrir:
-
-```text
-http://127.0.0.1:5500
-```
-
-## Controles
-
-- **Start the Trip** / **Next ▸** / **Day N ▸** / **Travel Again ↻**: avanzan la historia.
-- **← Back**: escena anterior.
-- **📍**: menú para saltar a cualquier escena.
-- **🔇 / 🔊**: música de fondo (los vídeos no se ven afectados: van siempre mudos).
-- **Burbuja de vídeo**: clic para ampliar; ✕, `Esc` o clic fuera para cerrar.
-- **⛶**: pantalla completa (o la tecla `F`). El mismo botón sale de ella.
-  En iPhone el botón no aparece: Safari no deja poner en pantalla completa nada
-  que no sea un vídeo. Ahí se usa "Añadir a pantalla de inicio" para verlo sin
-  las barras del navegador.
-- **Teclado**: `Espacio`, `Enter` o `→` avanzan; `←` retrocede; `F` pantalla
-  completa; `Esc` cierra overlays.
-
-## Deep links
-
-Útil para presentar o retomar en un punto concreto:
-
-- `index.html?scene=4` abre directamente el Día 2.
-- `index.html?scene=4&line=1` abre el Día 2 con la segunda frase ya en pantalla.
-- `index.html?scene=2&t=0.4` congela el carruaje al 40 % de su recorrido. Es la
-  forma cómoda de trazar un `ride.path` nuevo: vas probando valores de `t` y
-  ajustas los puntos hasta que las ruedas pisen el suelo en todo el trayecto.
-
-## Rendimiento
-
-Cosas que están hechas a propósito y conviene no deshacer:
-
-- **El canvas solo se repinta cuando cambia** (cambio de escena, fundido,
-  resize, o un fondo que termina de cargar). Repintar un PNG de 2754×1536 en
-  cada frame obligaba además a recalcular los desenfoques de los paneles que
-  van encima.
-- **Cada fondo se escala una sola vez** a un canvas fuera de pantalla del tamaño
-  del viewport (`scaledBackground`), y a partir de ahí un fundido son dos
-  volcados planos. Lo importante no es el reescalado en sí (medido: 3 ms por
-  fundido) sino que ese canvas guarda su propio bitmap: pintar la escena 0 ya no
-  puede obligar a **redecodificar** los 8,9 MB del PNG. El de la escena 0 se
-  prepara al arrancar y nunca se descarta, porque *Travel Again* siempre vuelve
-  ahí.
-- **El arte de los personajes se precarga y decodifica al arrancar**, en tiempo
-  libre, y las copias se guardan en `warmArtwork`. Los `<img>` de los actores se
-  reutilizan entre escenas, así que al pulsar *Travel Again* apuntaban al
-  carruaje y al aeropuerto: volver a decodificar los 5 MB de la portada justo en
-  ese clic era lo que hacía pesado el reinicio.
-- **Todas las animaciones mueven solo `transform` y `opacity`**, que el
-  navegador resuelve en la GPU. Nada anima `box-shadow`, `left`, `width` ni
-  `filter`, que fuerzan repintado o recálculo de layout.
-- **El carruaje se mueve con `transform`**, no con `left`/`bottom`/`height`. Su
-  ancho se calcula a partir de las proporciones del PNG en vez de leerlo del
-  layout, así que no hay reflow en ningún frame.
-- **`will-change` está acotado** a las clases que de verdad están animando
-  (`.is-walking`, `.is-riding`, `.is-posing`), no puesto a lo bruto. Así el
-  arte con `drop-shadow` se rasteriza una vez y luego solo se mueve la capa.
-- **Solo se descarga el vídeo de la escena actual.**
-
-## Notas
-
-- Los overlays (menú y vídeo) **hacen scroll** cuando no caben. Un elemento
-  centrado con flexbox que desborda no se puede desplazar hasta arriba, así que
-  van alineados al inicio y centrados con `margin: auto`, que funciona en los dos
-  casos. En móvil apaisado hay además un bloque `@media (max-height: 520px)` que
-  compacta los paneles.
-- El marco del vídeo lo dimensiona su título, que en un clip 9:16 es más ancho
-  que el propio vídeo, así que **el vídeo va centrado dentro del marco**
-  (`margin-inline: auto`). Es más simple que forzar el marco a encogerse.
-
-- Diseñado para horizontal; en móvil en vertical aparece un aviso para rotar.
-- Si una imagen no aparece, revisar nombre exacto, extensión y ruta.
-
-## Reparto de frases
-
-Quién dice qué, para ensayar:
+### Reparto de frases
 
 | Escena | Quién | Frase |
 |--------|-------|-------|
@@ -270,8 +74,282 @@ Quién dice qué, para ensayar:
 | 6 | Jenny | We are also going to see the Red Beach and Fira. |
 | 7 | Jenny | It is going to be a great trip! |
 
-Es decir: **Jenny** cuenta el día 1 entero, **Yined** los días 2 y 3 hasta las
-compras, y **Jenny** cierra con Red Beach & Fira y la frase final.
+Jenny cuenta el día 1 entero, Yined el día 2 y el día 3 hasta las compras, y
+Jenny cierra con Red Beach & Fira y la frase final. Para cambiarlo basta con
+tocar el `who: 'p1'` / `who: 'p2'` de cada línea en `SCENES`.
 
-Para cambiar el reparto, basta con cambiar el `who: 'p1'` / `who: 'p2'` de cada
-línea en `SCENES` ([assets/js/script.js](assets/js/script.js)).
+---
+
+## Estructura del proyecto
+
+```text
+PRESENTACION GRECIA/
+├── index.html          estructura, diálogo, menú y overlays
+├── README.md
+└── assets/
+    ├── css/styles.css  paleta egea, actores, botones y paneles
+    ├── js/script.js    escenas, puesta en escena, diálogo y eventos
+    ├── img/
+    │   ├── escene_0/   background.png · p1.png · p2.png · p1_face.png · p2_face.png
+    │   ├── escene_1/   background.png · p1.png · p2.png
+    │   ├── escene_2/   background.png · carraje.png
+    │   ├── escene_3/   background.png · video.mp4
+    │   ├── escene_4/   background.png · video.mp4
+    │   ├── escene_5/   background.png · video.mp4
+    │   ├── escene_6/   background.png · video.mp4
+    │   └── escene_7/   background.png
+    └── sounds/music.mp3
+```
+
+Sin dependencias ni build: HTML5, CSS3 (Google Fonts: Cinzel + Quicksand),
+JavaScript sin frameworks y Canvas 2D.
+
+---
+
+## Cómo ejecutar
+
+Con Live Server en VS Code, o con cualquier servidor estático:
+
+```bash
+python -m http.server 5500
+```
+
+Y abrir <http://127.0.0.1:5500>.
+
+Hace falta un servidor: abrir `index.html` con doble clic (`file://`) impide que
+carguen los vídeos y la música.
+
+---
+
+## Controles
+
+| | |
+|---|---|
+| **Start the Trip** | empieza el recorrido |
+| **Next ▸** / **Day N ▸** / **The End ▸** | avanzan frase o escena |
+| **Travel Again ↻** | reinicia desde la portada |
+| **← Back** | escena anterior |
+| **📍** | menú para saltar a cualquier escena |
+| **🔇 / 🔊** | música de fondo |
+| **⛶** | pantalla completa |
+| **Burbuja de vídeo** | clic para ampliar el clip |
+
+**Teclado:** `Espacio`, `Enter` o `→` avanzan · `←` retrocede · `F` pantalla
+completa · `Esc` cierra menú, créditos y vídeo.
+
+La música arranca en silencio y hay que pulsar 🔇 para activarla: los navegadores
+no permiten reproducir audio sin una interacción previa.
+
+---
+
+## Personajes sobre la escena
+
+Cada escena declara cómo aparecen los personajes con `cast`:
+
+| Valor | Qué hace |
+|-------|----------|
+| `pose` | Quietos, solo un leve movimiento de respiración. Portada. |
+| `walk` | Entran caminando con rebote de paso, sombra de contacto y desfase entre las dos; al llegar, el paso se relaja en un balanceo lento. Usa `p1.png` / `p2.png` de la carpeta. |
+| `ride` | Un único sprite combinado (`sprite: 'carraje.png'`) recorre la escena siguiendo `ride.path`. |
+| `none` | Los personajes ya están pintados dentro del fondo. Escenas 3 a 7. |
+
+`stage` coloca a cada personaje sobre el fondo concreto — es lo que se ajusta
+para que pisen el suelo:
+
+```js
+stage: { p1: { x: 36, y: 1, h: 63 },   // x: centro horizontal en % del ancho
+         p2: { x: 58, y: 6, h: 55 } }  // y: separación del borde inferior en %
+                                       // h: altura en vh
+```
+
+Si una escena con `cast: 'walk'` no trae sus propios `p1.png` / `p2.png`, se
+reutilizan automáticamente los de `escene_0`.
+
+### El carruaje (escena 2)
+
+Cruza de derecha a izquierda con un arco suave, en primer plano, y **se detiene
+al llegar** a esperar el `Next` — no da vueltas:
+
+```js
+ride: {
+  duration: 5500,
+  loop: false,          // true (o ausente) = bucle infinito
+  path: [               // x, y como fracción del viewport · h en vh
+    { x: 1.30, y: -0.130, h: 70 },   // fuera de cuadro, a la derecha
+    { x: 0.92, y: -0.100, h: 70 },
+    { x: 0.64, y: -0.088, h: 70 },   // el arco se aleja un poco aquí
+    { x: 0.44, y: -0.105, h: 70 },
+    { x: 0.30, y: -0.130, h: 70 },   // aparcado
+  ],
+}
+```
+
+Cada punto lleva **posición y tamaño**, así el sprite escala según la
+profundidad. Va en primer término a propósito: en este fondo la calle empedrada
+es una cuña que se abre hacia abajo, así que a media distancia solo hay suelo en
+la franja central. A ese tamaño, pasar por delante del pueblo se lee como
+cercanía, no como estar sobre los tejados.
+
+> Para trazar un `ride.path` nuevo: `index.html?scene=2&t=0.5` congela el
+> recorrido a la mitad. Vas probando valores de `t` entre 0 y 1 y mueves los
+> puntos hasta que las ruedas pisen bien en todo el trayecto.
+
+---
+
+## Vídeos
+
+Las escenas que declaran `video: 'video.mp4'` muestran una **burbuja circular**
+abajo a la izquierda con el clip en pequeño, con dos anillos que se expanden —
+el mismo gesto de invitación que los botones que laten en PRESENTACION FLAM — y
+un ▶ centrado. Al pulsarla se abre en grande, enmarcada; se cierra con la ✕, con
+`Esc` o pulsando fuera.
+
+Los clips **siempre van en bucle infinito y siempre en silencio**, sin forma de
+activarles el sonido:
+
+- No llevan controles nativos.
+- Un listener de `volumechange` los devuelve a silencio si algo intenta subir el
+  volumen (el menú del botón derecho de Chrome permite mostrar los controles).
+- El menú contextual sobre el vídeo está desactivado.
+
+Solo se descarga el vídeo de la escena actual; al cambiar de escena se libera el
+anterior, así los cuatro (unos 12 MB) nunca se cargan a la vez.
+
+Son verticales (720×1280) y el marco lo dimensiona su título, que es más ancho
+que un clip 9:16, así que **el vídeo va centrado dentro del marco**.
+
+---
+
+## Pantalla completa
+
+Botón ⛶ bajo el de música, o la tecla `F`. El mismo botón sale y cambia a ✕. Usa
+la API estándar con fallback `webkit` para Safari y Android antiguos.
+
+**En iPhone el botón no aparece.** Safari en iOS no permite poner en pantalla
+completa nada que no sea un `<video>`, así que en vez de dejar un botón que no
+hace nada, se oculta cuando el navegador no soporta la API. Ahí el equivalente es
+"Añadir a pantalla de inicio" y abrirlo desde ahí.
+
+---
+
+## Assets por escena
+
+| Archivo | Dónde | Obligatorio |
+|---------|-------|-------------|
+| `background.png` (o `.jpg`) | todas | recomendado |
+| `p1.png` / `p2.png` | escenas con `cast: 'walk'` o `'pose'` | no |
+| sprite suelto (`carraje.png`) | escenas con `cast: 'ride'` | sí |
+| `video.mp4` | escenas con `video:` | no |
+| `p1_face.png` / `p2_face.png` | solo `escene_0` | sí — avatares del diálogo |
+
+- Si falta un fondo, el canvas dibuja un **placeholder egeo** con el nombre de la
+  escena y la ruta exacta del archivo que espera. Nada se rompe.
+- Los avatares son recortes cuadrados de la cara. Para regenerarlos:
+
+  ```bash
+  python -c "from PIL import Image; Image.open('p1.png').crop((380,0,940,560)).resize((420,420)).save('p1_face.png')"
+  ```
+
+---
+
+## Añadir o reordenar escenas
+
+Todo vive en el objeto `SCENES` de [assets/js/script.js](assets/js/script.js).
+Cada entrada declara su propia carpeta, así que renumerar es cambiar una cadena:
+
+```js
+1: {
+  kind: 'story',                        // 'home' | 'story'
+  folder: 'escene_1',
+  day: 'Day 1',
+  place: 'Athens Airport',              // rótulo superior
+  cast: 'walk',                         // 'pose' | 'walk' | 'ride' | 'none'
+  stage: { p1: { x: 36, y: 1, h: 63 },
+           p2: { x: 58, y: 6, h: 55 } },
+  video: 'video.mp4',                   // opcional
+  lines: [{ who: 'p1', text: 'On our first day, we are going to arrive in Athens.' }],
+},
+```
+
+Al añadir una escena, acuérdate de sumar su botón al menú de
+[index.html](index.html) (`.panel__item` con `data-target`).
+
+---
+
+## Deep links
+
+Útiles para presentar o retomar en un punto concreto:
+
+- `index.html?scene=4` — abre directamente el Día 2.
+- `index.html?scene=4&line=1` — Día 2 con la segunda frase ya en pantalla.
+- `index.html?scene=2&t=0.5` — congela el carruaje a mitad de recorrido.
+
+---
+
+## Rendimiento
+
+Decisiones deliberadas; conviene no deshacerlas sin medir:
+
+- **El canvas solo se repinta cuando cambia** (cambio de escena, fundido, resize
+  o un fondo que termina de cargar). Repintarlo en cada frame obligaba además a
+  recalcular los desenfoques de los paneles que van encima.
+- **Cada fondo se escala una vez** a un canvas fuera de pantalla del tamaño del
+  viewport. Lo importante no es ahorrar el reescalado (medido: 3 ms por fundido)
+  sino que ese canvas guarda su propio bitmap, así que pintar una escena no puede
+  obligar a **redecodificar** el PNG original. El de la escena 0 se prepara al
+  arrancar y nunca se descarta, porque *Travel Again* siempre vuelve ahí.
+- **El arte de los personajes se precarga y decodifica en tiempo libre**
+  (`requestIdleCallback`) y se mantiene referenciado en `warmArtwork`. Los `<img>`
+  de los actores se reutilizan entre escenas, así que al pulsar *Travel Again*
+  apuntaban al carruaje y al aeropuerto: redecodificar los 5 MB de la portada
+  justo en ese clic era lo que hacía pesado el reinicio.
+- **Todas las animaciones mueven solo `transform` y `opacity`**, que se resuelven
+  en la GPU. Ninguna anima `box-shadow`, `left`, `width` ni `filter`, que fuerzan
+  repintado o recálculo de layout.
+- **El carruaje se mueve con `transform`**, no con `left`/`bottom`/`height`. Su
+  ancho se deriva de las proporciones del PNG en vez de leerlo del layout, así que
+  no hay reflow en ningún frame.
+- **`will-change` está acotado** a las clases que están animando de verdad
+  (`.is-walking`, `.is-riding`, `.is-posing`), no puesto a lo bruto: así el arte
+  con `drop-shadow` se rasteriza una vez y luego solo se mueve la capa.
+- **Solo se descarga el vídeo de la escena actual.**
+
+---
+
+## Móvil
+
+- Diseñado para horizontal; en vertical aparece un aviso para rotar el
+  dispositivo.
+- Los overlays (menú y vídeo) **hacen scroll** cuando no caben. Un elemento
+  centrado con flexbox que desborda no se puede desplazar hasta arriba, así que
+  van alineados al inicio y centrados con `margin: auto`, que funciona en los dos
+  casos.
+- Hay un bloque `@media (max-height: 520px)` que compacta los paneles en móvil
+  apaisado, y otros para ≤900 px y ≤560 px de ancho.
+
+---
+
+## Notas
+
+- Si una imagen no aparece, revisar nombre exacto, extensión y ruta: el
+  placeholder del canvas indica el archivo que esperaba.
+- **Pendiente de contenido:** el fondo de `escene_5` tiene un letrero de neón que
+  dice **MYKONOS**, pero la frase que lo acompaña habla de *"the rest of
+  Santorini"*. Mykonos es otra isla; conviene regenerar esa imagen antes de
+  presentarla.
+- Los fondos de `escene_4`, `escene_6` y `escene_7` miden 1584×672 y el de
+  `escene_5` 1408×768, frente a los 2754×1536 de las escenas 0 a 3. Se ven bien,
+  pero el canvas los amplía, así que quedan algo menos nítidos. Si existen
+  versiones grandes, mejor cambiarlas.
+- **`assets/sounds/music.mp3` pesa 79,5 MB**: son ~174 minutos a 64 kbps. Para
+  una presentación de unos minutos es muchísimo, compite con los vídeos por el
+  ancho de banda y encima suena peor que la pista anterior.
+  `assets/sounds/music_.mp3` (5,6 MB, 4,1 min, 192 kbps) es esa pista anterior y
+  ahora mismo no la usa nadie. Salvo que el archivo grande sea intencionado,
+  conviene volver al pequeño. El reproductor está en `preload = 'metadata'`, así
+  que no descarga la pista entera hasta que se pulsa 🔊, pero aun así.
+
+---
+
+Ideas, diseño y creación · Yined Molina
+Imágenes generadas con Google Gemini

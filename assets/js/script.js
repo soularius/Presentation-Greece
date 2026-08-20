@@ -270,6 +270,9 @@ function preloadArtwork() {
 
 // ── Audio ─────────────────────────────────────────────────────
 const bgMusic = new Audio('assets/sounds/music.mp3');
+// Metadata only: the browser streams the rest once it actually plays,
+// instead of racing the scene artwork to buffer the whole track.
+bgMusic.preload = 'metadata';
 bgMusic.loop   = true;
 bgMusic.volume = 0.4;
 bgMusic.muted  = true;
