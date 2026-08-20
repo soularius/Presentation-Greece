@@ -30,6 +30,14 @@ const backBtn  = document.getElementById('backBtn');
 const menuBtn  = document.getElementById('menuBtn');
 const musicBtn = document.getElementById('musicBtn');
 
+const videoBubble    = document.getElementById('videoBubble');
+const videoBubbleBtn = document.getElementById('videoBubbleBtn');
+const videoThumb     = document.getElementById('videoThumb');
+const videoOverlay   = document.getElementById('videoOverlay');
+const videoLarge     = document.getElementById('videoLarge');
+const videoCaption   = document.getElementById('videoCaption');
+const closeVideoBtn  = document.getElementById('closeVideoBtn');
+
 const sceneMenu       = document.getElementById('sceneMenu');
 const closeMenuBtn    = document.getElementById('closeMenuBtn');
 const creditsBtn      = document.getElementById('creditsBtn');
@@ -66,6 +74,9 @@ const SPEAKERS = {
 //
 //   enter   'left' (default) or 'right' — the side the cast walks in
 //           from. Match it to the direction the art faces.
+//
+//   video   filename inside the scene folder. Shows the looping, muted
+//           bubble in the corner; clicking it opens the large view.
 //
 const SCENES = {
   0: {
@@ -123,6 +134,7 @@ const SCENES = {
   3: {
     kind: 'story',
     folder: 'escene_3',
+    video: 'video.mp4',
     day: 'Day 1',
     place: 'Acropolis & Parthenon',
     cast: 'none',
@@ -134,6 +146,7 @@ const SCENES = {
   4: {
     kind: 'story',
     folder: 'escene_4',
+    video: 'video.mp4',
     day: 'Day 2',
     place: 'Santorini · Oia & the Caldera',
     cast: 'none',
@@ -147,6 +160,7 @@ const SCENES = {
   5: {
     kind: 'story',
     folder: 'escene_5',
+    video: 'video.mp4',
     day: 'Day 3',
     place: 'Shops & the City',
     cast: 'none',
@@ -159,6 +173,7 @@ const SCENES = {
   6: {
     kind: 'story',
     folder: 'escene_6',
+    video: 'video.mp4',
     day: 'Day 3',
     place: 'Red Beach & Fira',
     cast: 'none',
@@ -181,13 +196,22 @@ const SCENES = {
 
 const SCENE_IDS = Object.keys(SCENES).map(Number).sort((a, b) => a - b);
 
+// The canvas only changes on a scene change, a cross-fade, a resize or
+// a background finishing its download. Repainting a 2754×1536 image on
+// every frame is wasted work, and it also forces the blurred panels on
+// top of it to recompute their backdrop each frame.
+let needsPaint = true;
+
 // ── Assets ────────────────────────────────────────────────────
 // Backgrounds try .png first and fall back to .jpg. If neither is
 // there yet, the canvas paints a styled Aegean placeholder.
 function loadBackground(folder) {
   const img = new Image();
   img.dataset.state = 'loading';
-  img.addEventListener('load', () => { img.dataset.state = 'ok'; });
+  img.addEventListener('load', () => {
+    img.dataset.state = 'ok';
+    needsPaint = true;   // a late arrival has to replace its placeholder
+  });
   img.addEventListener('error', () => {
     if (img.dataset.state === 'loading') {
       img.dataset.state = 'retry';
@@ -244,7 +268,7 @@ function toggleMusic() {
 
 // ── State ─────────────────────────────────────────────────────
 const ANIM = {
-  FADE_SPEED: 0.05,
+  FADE_SPEED: 0.08,
   WALK_MS:    2900,    // walk-in duration plus the slowest delay
 };
 
@@ -277,6 +301,7 @@ function resizeCanvas() {
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   state.w = rect.width;
   state.h = rect.height;
+  needsPaint = true;
 }
 
 function isReady(img) {
@@ -533,6 +558,71 @@ function stageActors(cfg) {
   startWalking([actor1, actor2], fromRight);
 }
 
+// ── Video ─────────────────────────────────────────────────────
+// The clips are decoration, never a soundtrack: they loop forever and
+// stay muted. Browsers also refuse to autoplay anything with sound, so
+// silence is what keeps them running at all.
+function lockMuted(video) {
+  const enforce = () => {
+    if (!video.muted || video.volume !== 0) {
+      video.muted  = true;
+      video.volume = 0;
+    }
+  };
+  enforce();
+  // Chrome's right-click menu can expose native controls; this puts the
+  // volume straight back if anyone reaches for it.
+  video.addEventListener('volumechange', enforce);
+  video.addEventListener('contextmenu', (e) => e.preventDefault());
+}
+
+[videoThumb, videoLarge].forEach(lockMuted);
+
+function playSilently(video) {
+  video.muted = true;
+  const attempt = video.play();
+  if (attempt && attempt.catch) attempt.catch(() => {});
+}
+
+function closeVideo(resumeThumb = true) {
+  videoOverlay.classList.add('hidden');
+  videoLarge.pause();
+  videoLarge.removeAttribute('src');
+  videoLarge.load();
+  if (resumeThumb && videoThumb.getAttribute('src')) playSilently(videoThumb);
+}
+
+function openVideo() {
+  const cfg = SCENES[state.scene];
+  if (!cfg || !cfg.video) return;
+
+  videoCaption.textContent = cfg.place || '';
+  videoLarge.src = `assets/img/${cfg.folder}/${cfg.video}`;
+  videoOverlay.classList.remove('hidden');
+  playSilently(videoLarge);
+  // No point decoding two copies of the same clip at once.
+  videoThumb.pause();
+}
+
+// Only the current scene's clip is loaded, so the four videos are never
+// downloaded at the same time.
+function setupVideo(cfg) {
+  closeVideo(false);
+
+  if (!cfg.video) {
+    videoBubble.classList.add('hidden');
+    videoThumb.pause();
+    videoThumb.removeAttribute('src');
+    videoThumb.load();
+    return;
+  }
+
+  const src = `assets/img/${cfg.folder}/${cfg.video}`;
+  if (!videoThumb.src.endsWith(src)) videoThumb.src = src;
+  videoBubble.classList.remove('hidden');
+  playSilently(videoThumb);
+}
+
 // ── Dialogue ──────────────────────────────────────────────────
 function currentLine() {
   const cfg = SCENES[state.scene];
@@ -615,6 +705,7 @@ function goToScene(id) {
 
   state.scene     = id;
   state.lineIndex = 0;
+  needsPaint      = true;
 
   const isHome  = cfg.kind === 'home';
   const isStory = cfg.kind === 'story';
@@ -625,6 +716,7 @@ function goToScene(id) {
   show(backBtn,  id > 0);
 
   stageActors(cfg);
+  setupVideo(cfg);
 
   if (isStory) {
     dayBadgeNum.textContent   = cfg.day || '';
@@ -636,15 +728,17 @@ function goToScene(id) {
 
 // ── Render loop ───────────────────────────────────────────────
 function render() {
-  drawBackground();
-
   const cfg = SCENES[state.scene];
 
-  if (cfg && cfg.kind === 'story') {
-    if (cfg.cast === 'ride') updateRide(cfg);
-    drawFooterScrim();
-  } else {
-    drawVignette();
+  // The riding sprite is a DOM element, so it moves without the canvas.
+  if (cfg && cfg.cast === 'ride') updateRide(cfg);
+
+  if (needsPaint) {
+    drawBackground();
+    if (cfg && cfg.kind === 'story') drawFooterScrim();
+    else drawVignette();
+    // Keep painting only while a cross-fade is still running.
+    needsPaint = state.prevBg !== null;
   }
 
   requestAnimationFrame(render);
@@ -667,6 +761,10 @@ document.querySelectorAll('.panel__item').forEach((btn) => {
   btn.addEventListener('click', () => goToScene(Number(btn.dataset.target)));
 });
 
+videoBubbleBtn.addEventListener('click', openVideo);
+closeVideoBtn.addEventListener('click', () => closeVideo());
+videoOverlay.addEventListener('click', () => closeVideo());
+
 creditsBtn.addEventListener('click', () => creditsOverlay.classList.remove('hidden'));
 closeCreditsBtn.addEventListener('click', () => creditsOverlay.classList.add('hidden'));
 creditsOverlay.addEventListener('click', (e) => {
@@ -679,6 +777,7 @@ window.addEventListener('keydown', (e) => {
   if (e.key === 'Escape') {
     sceneMenu.classList.add('hidden');
     creditsOverlay.classList.add('hidden');
+    closeVideo();
     return;
   }
   if (e.key === 'ArrowLeft') {
@@ -687,6 +786,7 @@ window.addEventListener('keydown', (e) => {
   }
   if (e.key === ' ' || e.key === 'Enter' || e.key === 'ArrowRight') {
     e.preventDefault();
+    if (!videoOverlay.classList.contains('hidden')) { closeVideo(); return; }
     if (!cfg) return;
     if (cfg.kind === 'story') advance();
     else goToScene(1);

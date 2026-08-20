@@ -77,6 +77,7 @@ su propia carpeta de assets, así que renumerar es cambiar una cadena:
     llegar y se queda aparcado ahí hasta que se pulsa *Next*. Con `loop: true`
     (o sin la clave) da vueltas sin parar.
   - `ride.duration` → milisegundos que tarda el trayecto completo.
+- `video: 'video.mp4'` → muestra la burbuja de vídeo (ver más abajo).
 - `cast: 'pose'` → quietos, solo respiración.
 - `cast: 'none'` → los personajes ya están pintados en el fondo (escenas 3 a 7).
 - `enter: 'right'` → entran por la derecha en vez de por la izquierda. Ponlo
@@ -112,6 +113,7 @@ Cada carpeta `assets/img/escene_N/` admite:
 | `background.png` (o `.jpg`) | todas | recomendado |
 | `p1.png` / `p2.png` | las que usen `cast: 'walk'` o `'pose'` | no |
 | sprite suelto (ej. `carraje.png`) | las que usen `cast: 'ride'` | sí |
+| `video.mp4` | las que declaren `video:` (3, 4, 5 y 6) | no |
 | `p1_face.png` / `p2_face.png` | solo `escene_0` | sí (avatares del diálogo) |
 
 Notas:
@@ -132,6 +134,31 @@ Notas:
 
 Todas las escenas (0–7) tienen ya su fondo y su arte de personajes.
 
+## Vídeos
+
+Las escenas que declaran `video: 'video.mp4'` muestran una **burbuja circular**
+abajo a la izquierda con el clip reproduciéndose en pequeño. Alrededor le salen
+dos anillos que se expanden — el mismo gesto de invitación que los botones que
+laten en PRESENTACION FLAM — para que se note que se puede pulsar. Al hacer clic
+se abre en grande, centrado y enmarcado; se cierra con la ✕, con `Esc` o
+pulsando en cualquier sitio.
+
+Los clips **siempre van en bucle infinito y siempre en silencio**, y no hay forma
+de activarles el sonido:
+
+- No llevan controles nativos.
+- Un listener de `volumechange` devuelve el vídeo a silencio si algo intenta
+  subirle el volumen (por ejemplo el menú del botón derecho de Chrome, que
+  permite mostrar los controles).
+- El menú contextual sobre el vídeo está desactivado.
+
+Solo se descarga el vídeo de la escena en la que estás: al cambiar de escena se
+libera el anterior. Así los cuatro clips (unos 12 MB en total) nunca se cargan a
+la vez.
+
+Los actuales son verticales (720×1280); la vista ampliada se dimensiona por
+altura, así que un clip horizontal también encajaría.
+
 ## Cómo ejecutar
 
 Con Live Server en VS Code, o con cualquier servidor estático:
@@ -151,7 +178,8 @@ http://127.0.0.1:5500
 - **Start the Trip** / **Next ▸** / **Day N ▸** / **Travel Again ↻**: avanzan la historia.
 - **← Back**: escena anterior.
 - **📍**: menú para saltar a cualquier escena.
-- **🔇 / 🔊**: música de fondo.
+- **🔇 / 🔊**: música de fondo (los vídeos no se ven afectados: van siempre mudos).
+- **Burbuja de vídeo**: clic para ampliar; ✕, `Esc` o clic fuera para cerrar.
 - **Teclado**: `Espacio`, `Enter` o `→` avanzan; `←` retrocede; `Esc` cierra overlays.
 
 ## Deep links

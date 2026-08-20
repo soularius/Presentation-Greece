@@ -42,6 +42,16 @@
       <span id="dayBadgePlace" class="day-badge__place">Athens</span>
     </div>
 
+    <!-- Video bubble: always muted, always looping, click to enlarge -->
+    <div id="videoBubble" class="video-bubble hidden">
+      <button id="videoBubbleBtn" class="video-bubble__btn" type="button" aria-label="Enlarge the video">
+        <video id="videoThumb" class="video-bubble__video"
+               muted loop playsinline autoplay preload="auto"
+               disablepictureinpicture controlslist="nodownload noplaybackrate"></video>
+        <span class="video-bubble__badge" aria-hidden="true">&#9654;</span>
+      </button>
+    </div>
+
     <!-- Dialogue bar -->
     <div id="dialogue" class="dialogue hidden">
       <img id="dialogueAvatar" class="dialogue__avatar" src="assets/img/escene_0/p1_face.png" alt="Speaker" />
@@ -73,6 +83,17 @@
         <button class="panel__item" data-target="7">&#10024; Goodbye, Greece</button>
       </div>
     </div>
+  </div>
+
+  <div id="videoOverlay" class="overlay hidden" role="dialog" aria-modal="true" aria-label="Video">
+    <div class="video-frame">
+      <button id="closeVideoBtn" class="video-frame__close" type="button" aria-label="Close">&#10005;</button>
+      <video id="videoLarge" class="video-frame__video"
+             muted loop playsinline preload="auto"
+             disablepictureinpicture controlslist="nodownload noplaybackrate"></video>
+      <p id="videoCaption" class="video-frame__caption"></p>
+    </div>
+    <p class="video-frame__hint">click anywhere to close</p>
   </div>
 
   <div id="creditsOverlay" class="overlay hidden" role="dialog" aria-modal="true" aria-label="Credits and sources">
